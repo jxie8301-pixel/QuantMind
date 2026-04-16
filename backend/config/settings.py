@@ -38,6 +38,18 @@ class Settings:
         self.security = SecuritySettings()
         self.database = DatabaseSettings()
         self.edition = os.getenv("APP_EDITION", "oss")
+        self.capabilities = {
+            "edition": self.edition,
+            "features": {
+                "backtest": True,
+                "simulation": True,
+                "live_trading": False,
+                "ai_strategy": True,
+                "community": False,
+                "subscription": False,
+                "sms": False,
+            },
+        }
 
 
 settings = Settings()
