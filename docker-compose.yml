@@ -90,7 +90,18 @@ services:
       - ENGINE_PORT=8001
       - TRADE_PORT=8002
       - STREAM_PORT=8003
-      
+
+      # 服务间通信 (OSS单镜像模式使用localhost)
+      - TRADE_SERVICE_URL=http://127.0.0.1:8002
+      - ENGINE_SERVICE_URL=http://127.0.0.1:8001
+      - AI_IDE_SERVICE_URL=http://127.0.0.1:8001
+      - STREAM_SERVICE_URL=http://127.0.0.1:8003
+      - MARKET_DATA_SERVICE_URL=http://127.0.0.1:8003
+      - STRATEGY_SERVICE_URL=http://127.0.0.1:8001
+      - PORTFOLIO_SERVICE_URL=http://127.0.0.1:8002
+      - USER_SERVICE_URL=http://127.0.0.1:8002
+      - REAL_TRADING_SERVICE_URL=http://127.0.0.1:8002
+
       # 调试配置
       - DEBUG=false
       - LOG_LEVEL=INFO
