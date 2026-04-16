@@ -769,11 +769,11 @@ def _schedule_user_notification(
     )
 
 
-def _parse_int_user_id(raw_user_id: str) -> int:
-    try:
-        return int(raw_user_id)
-    except (TypeError, ValueError):
+def _parse_user_id(raw_user_id: str) -> str:
+    """获取用户ID (字符串类型，兼容 'admin' 等非数字ID)"""
+    if not raw_user_id:
         raise HTTPException(status_code=400, detail="Invalid user_id in token")
+    return raw_user_id
 
 
 def _normalize_execution_config(user_exec_cfg: dict, base_exec_cfg: dict) -> dict:

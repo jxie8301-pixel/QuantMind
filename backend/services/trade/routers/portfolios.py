@@ -24,11 +24,9 @@ from backend.services.trade.portfolio.services import PortfolioService
 from backend.services.trade.portfolio.utils.limiter import limiter
 
 
-async def get_current_user_id(auth: AuthContext = Depends(get_auth_context)) -> int:
-    try:
-        return int(auth.user_id)
-    except (TypeError, ValueError):
-        raise HTTPException(status_code=400, detail="Invalid user_id in token")
+async def get_current_user_id(auth: AuthContext = Depends(get_auth_context)) -> str:
+    """获取当前用户ID (字符串类型，兼容 'admin' 等非数字ID)"""
+    return auth.user_id
 
 
 async def get_current_tenant_id(
@@ -62,7 +60,7 @@ async def create_portfolio(
     request: Request,
     data: PortfolioCreate,
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """创建投资组合"""
@@ -90,7 +88,7 @@ async def create_portfolio(
 async def list_portfolios(
     request: Request,
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     skip: int = Query(0, ge=0, description="跳过数量"),
     limit: int = Query(100, ge=1, le=1000, description="限制数量"),
     status: str | None = Query(None, description="状态过滤"),
@@ -156,7 +154,7 @@ async def list_portfolios(
 )
 async def get_all_portfolios_distribution(
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """汇总资产分布"""
@@ -235,7 +233,7 @@ async def get_all_portfolios_distribution(
 async def get_all_portfolios_performance(
     type: str = Query("daily_return", description="数据类型: daily_return (收益率), daily_pnl (盈亏金额)"),
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """汇总业绩曲线"""
@@ -309,7 +307,7 @@ async def get_portfolio(
     request: Request,
     portfolio_id: int,
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """查询投资组合详情"""
@@ -338,7 +336,7 @@ async def update_portfolio(
     portfolio_id: int,
     data: PortfolioUpdate,
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """更新投资组合"""
@@ -364,7 +362,7 @@ async def delete_portfolio(
     request: Request,
     portfolio_id: int,
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """删除投资组合"""
@@ -390,7 +388,7 @@ async def calculate_portfolio_metrics(
     request: Request,
     portfolio_id: int,
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """计算投资组合指标"""
@@ -421,7 +419,7 @@ async def create_portfolio_snapshot(
     request: Request,
     portfolio_id: int,
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """创建投资组合快照"""
@@ -452,7 +450,7 @@ async def list_portfolio_snapshots(
     portfolio_id: int,
     limit: int = Query(100, ge=1, le=1000, description="限制数量"),
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """查询投资组合快照历史"""
@@ -491,7 +489,7 @@ async def trigger_portfolio_settlement(
     request: Request,
     portfolio_id: int,
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """手动触发结算快照"""
@@ -530,7 +528,7 @@ async def bind_strategy(
     portfolio_id: int,
     data: BindStrategyRequest,
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     token: str = Depends(get_token),
     db: AsyncSession = Depends(get_db),
 ):
@@ -556,7 +554,7 @@ async def start_real_trading(
     request: Request,
     portfolio_id: int,
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     token: str = Depends(get_token),
     db: AsyncSession = Depends(get_db),
 ):
@@ -582,7 +580,7 @@ async def stop_real_trading(
     request: Request,
     portfolio_id: int,
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """停止实盘交易"""
@@ -607,7 +605,7 @@ async def sync_trading_status(
     request: Request,
     portfolio_id: int,
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """同步实盘运行状态"""
@@ -627,7 +625,7 @@ async def sync_trading_status(
 async def get_performance_metrics(
     portfolio_id: int = Path(..., description="组合ID"),
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """获取投资组合风险指标（夏普比率、波动率、最大回撤等）"""
@@ -677,7 +675,7 @@ async def get_performance_metrics(
 async def get_attribution(
     portfolio_id: int = Path(..., description="组合ID"),
     tenant_id: str = Depends(get_current_tenant_id),
-    user_id: int = Depends(get_current_user_id),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """获取投资组合绩效归因分析"""
