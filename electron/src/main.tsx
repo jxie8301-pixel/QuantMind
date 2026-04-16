@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { HashRouter } from 'react-router-dom';
 import App from './App';
 import store from './store';
+import { QueryProvider } from './providers/QueryProvider';
 
 // Electron API 兼容层 (Web 模式自动降级)
 import './utils/electronCompat';
@@ -60,9 +61,11 @@ void preloadAiIdeResources();
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <Provider store={store}>
-      <HashRouter>
-        <App />
-      </HashRouter>
+      <QueryProvider>
+        <HashRouter>
+          <App />
+        </HashRouter>
+      </QueryProvider>
     </Provider>
   </React.StrictMode>
 );

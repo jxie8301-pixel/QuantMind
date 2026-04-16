@@ -14,7 +14,6 @@ import { TitleBar } from './components/layout/TitleBar';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { useMenuExport } from './hooks/useMenuExport';
 import { WebSocketProvider } from './contexts/WebSocketContext';
-import { QueryProvider } from './providers/QueryProvider';
 import { selectCurrentTab, setCurrentTab } from './store/slices/aiStrategySlice';
 import type { DashboardTab } from './store/slices/aiStrategySlice';
 import logger from './utils/safeLogger';
@@ -316,9 +315,8 @@ export default function App() {
 
   return (
     <RecoilRoot>
-      <QueryProvider>
-        <WebSocketProvider>
-          <ConfigProvider locale={zhCN}>
+      <WebSocketProvider>
+        <ConfigProvider locale={zhCN}>
             <div className="app-root">
             <TitleBar />
             <ErrorBoundary>
@@ -433,7 +431,6 @@ export default function App() {
           </div>
           </ConfigProvider>
         </WebSocketProvider>
-      </QueryProvider>
     </RecoilRoot>
   );
 }
