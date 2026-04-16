@@ -105,6 +105,8 @@ research/data/
 research/data_adapter/qlib_data/
 research/data_adapter/processed/
 models/
+!backend/services/*/models/
+!backend/services/*/*/models/
 
 # Test Coverage Artifacts
 .coverage
