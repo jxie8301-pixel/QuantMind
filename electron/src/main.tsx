@@ -20,7 +20,7 @@ import './styles/mac-theme.css';
 import './styles/ai-strategy-theme.css';
 
 // 启动日志：明确本地服务连接
-const serviceHost = import.meta.env.VITE_SERVICE_HOST || '127.0.0.1:8000';
+const serviceHost = import.meta.env.VITE_SERVICE_HOST || '';
 console.log(
   `%c[QuantMind OSS]%c 已连接本地服务: %c${serviceHost}`,
   'color: #10b981; font-weight: bold; font-size: 14px;',

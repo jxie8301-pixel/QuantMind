@@ -26,7 +26,7 @@ export const HeaderBar: React.FC = () => {
     const checkLatency = async () => {
       const start = Date.now();
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api/v1';
         const healthUrl = baseUrl.split('/api/v1')[0] + '/health';
 
         await fetch(healthUrl, { mode: 'no-cors', cache: 'no-cache' });

@@ -84,7 +84,7 @@ export class SimpleCosUploadService {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // 返回模拟的上传结果
-      const publicBaseUrl = this.config.baseUrl || 'http://127.0.0.1:8000';
+      const publicBaseUrl = this.config.baseUrl || '';
       return {
         success: true,
         url: `${publicBaseUrl}/ai-results/${fileName}`,
@@ -157,7 +157,7 @@ export const cosUploadService = new SimpleCosUploadService({
   secretKey: process.env.COS_SECRET_KEY || 'your-secret-key',
   bucket: process.env.COS_BUCKET || 'quantmind-ai-results',
   region: process.env.COS_REGION || 'ap-beijing',
-  baseUrl: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000',
+  baseUrl: import.meta.env.VITE_API_BASE_URL || '',
 });
 
 export default SimpleCosUploadService;

@@ -1,8 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-const apiBase = process.env.VITE_API_URL || process.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
-const wsBase = process.env.VITE_WS_BASE_URL || apiBase.replace(/^http/, 'ws');
+// Web 部署使用相对路径，通过 Nginx 代理访问后端
+// Electron 桌面版使用绝对路径
+const apiBase = process.env.VITE_API_URL || process.env.VITE_API_BASE_URL || '';
+const wsBase = process.env.VITE_WS_BASE_URL || '';
 
 export default defineConfig(({ mode }) => {
   return {

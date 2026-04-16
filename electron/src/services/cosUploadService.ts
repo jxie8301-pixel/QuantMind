@@ -53,7 +53,7 @@ class COSUploadService {
   }
 
   private getPublicBaseUrl(): string {
-    return this.config.baseUrl || 'http://127.0.0.1:8000';
+    return this.config.baseUrl || '';
   }
 
   /**

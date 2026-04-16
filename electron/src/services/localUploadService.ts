@@ -25,7 +25,7 @@ class LocalUploadService {
   private baseUrl: string;
 
   constructor(baseUrl?: string) {
-    this.baseUrl = baseUrl || import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
+    this.baseUrl = baseUrl || import.meta.env.VITE_API_BASE_URL || '/api/v1';
   }
 
   private getApiBaseUrl(): string {

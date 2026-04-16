@@ -12,7 +12,7 @@ export interface StorageConfig {
  * 获取本地存储配置
  */
 export const getStorageConfig = (): StorageConfig => {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
   return {
     baseUrl,
     enabled: true
@@ -56,7 +56,7 @@ export const generateFileName = (
  * 默认存储配置
  */
 export const defaultStorageConfig: StorageConfig = {
-  baseUrl: 'http://127.0.0.1:8000',
+  baseUrl: '',
   enabled: true
 };
 

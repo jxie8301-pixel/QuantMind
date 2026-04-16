@@ -24,7 +24,7 @@ export const SERVICE_PORTS = {
 } as const;
 
 const ENV: Record<string, any> = typeof import.meta !== 'undefined' ? (import.meta as any).env || {} : {};
-const HOST = ENV.VITE_SERVICE_HOST || '127.0.0.1:8000';
+const HOST = ENV.VITE_SERVICE_HOST || '';
 const HTTP_PROTOCOL = ENV.VITE_HTTP_PROTOCOL || 'http';
 const WS_PROTOCOL = HTTP_PROTOCOL === 'https' ? 'wss' : 'ws';
 
@@ -37,7 +37,7 @@ export function normalizeBaseUrl(url: string): string {
   return normalized;
 }
 
-const API_BASE = normalizeBaseUrl(ENV.VITE_API_BASE_URL || `${HTTP_PROTOCOL}://${HOST}`);
+const API_BASE = normalizeBaseUrl(ENV.VITE_API_BASE_URL || '');
 
 export const SERVICE_URLS = {
   API_GATEWAY: normalizeBaseUrl(ENV.VITE_API_GATEWAY_URL) || API_BASE,

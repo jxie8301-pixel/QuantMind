@@ -1,5 +1,5 @@
 export const STORAGE_DOMAIN_KEY = 'user_center_storage_domain';
-export const DEFAULT_STORAGE_DOMAIN = 'http://127.0.0.1:8000';
+export const DEFAULT_STORAGE_DOMAIN = '';
 
 function sanitizeDomain(value: string): string {
   const v = String(value || '').trim().replace(/\/+$/, '');
