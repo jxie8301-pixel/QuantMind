@@ -39,6 +39,20 @@ export function normalizeBaseUrl(url: string): string {
 
 const API_BASE = normalizeBaseUrl(ENV.VITE_API_BASE_URL || '');
 
+// WebSocket URL 构建
+const getWebSocketUrl = () => {
+  // 优先使用环境变量
+  if (ENV.VITE_WS_BASE_URL || ENV.VITE_WEBSOCKET_MARKET_URL) {
+    return ENV.VITE_WS_BASE_URL || ENV.VITE_WEBSOCKET_MARKET_URL;
+  }
+  // Web 部署使用相对路径，通过 Nginx 代理
+  if (typeof window !== 'undefined') {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${protocol}//${window.location.host}/ws/api/v1/ws/market`;
+  }
+  return '';
+};
+
 export const SERVICE_URLS = {
   API_GATEWAY: normalizeBaseUrl(ENV.VITE_API_GATEWAY_URL) || API_BASE,
   MARKET_DATA: normalizeBaseUrl(ENV.VITE_MARKET_DATA_API_URL) || API_BASE,
@@ -48,7 +62,7 @@ export const SERVICE_URLS = {
   STOCK_QUERY: normalizeBaseUrl(ENV.VITE_STOCK_QUERY_API_URL) || API_BASE,
   TRADING: normalizeBaseUrl(ENV.VITE_TRADING_API_URL) || API_BASE,
   QLIB_SERVICE: normalizeBaseUrl(ENV.VITE_QLIB_SERVICE_URL) || API_BASE,
-  WEBSOCKET_MARKET: ENV.VITE_WS_BASE_URL || ENV.VITE_WEBSOCKET_MARKET_URL || `${WS_PROTOCOL}://${HOST}:${SERVICE_PORTS.WEBSOCKET_MARKET}/api/v1/ws/market`,
+  WEBSOCKET_MARKET: getWebSocketUrl(),
 } as const;
 
 // API路径配置
