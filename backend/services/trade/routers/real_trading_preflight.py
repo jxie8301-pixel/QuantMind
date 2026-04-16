@@ -11,7 +11,7 @@ from .real_trading_utils import (
     _get_stream_series_redis_client,
     _normalize_identity,
     _parse_bridge_report_ts,
-    _parse_int_user_id,
+    _parse_user_id,
     _resolve_preflight_symbols,
     _resolve_runner_image_for_mode,
     _upsert_preflight_snapshot,
@@ -113,7 +113,7 @@ async def preflight_check(
 
     # 4) User ID 格式（执行链路要求可转 int）
     try:
-        _parse_int_user_id(resolved_user_id)
+        _parse_user_id(resolved_user_id)
         add_check("user_id", "用户标识", True, True, "用户标识格式合法")
     except HTTPException:
         add_check(

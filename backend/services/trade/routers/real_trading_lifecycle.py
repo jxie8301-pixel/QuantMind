@@ -9,7 +9,7 @@ from .real_trading_utils import (
     _normalize_execution_config,
     _normalize_identity,
     _normalize_live_trade_config,
-    _parse_int_user_id,
+    _parse_user_id,
     _schedule_status_writeback,
     _schedule_user_notification,
 )
@@ -670,7 +670,7 @@ async def get_orders(
         resolved_user_id, resolved_tenant_id = _normalize_identity(
             auth, user_id=user_id, tenant_id=tenant_id
         )
-        uid_int = _parse_int_user_id(resolved_user_id)
+        uid = _parse_user_id(resolved_user_id)
         stmt = select(Order).where(
             Order.user_id == uid_int, Order.tenant_id == resolved_tenant_id
         )
@@ -706,7 +706,7 @@ async def get_trade_history(
         resolved_user_id, resolved_tenant_id = _normalize_identity(
             auth, user_id=user_id, tenant_id=tenant_id
         )
-        uid_int = _parse_int_user_id(resolved_user_id)
+        uid = _parse_user_id(resolved_user_id)
         stmt = select(Trade).where(
             Trade.user_id == uid_int, Trade.tenant_id == resolved_tenant_id
         )
