@@ -107,16 +107,9 @@ services:
       - ./db:/app/db
       # 日志
       - ./logs:/app/logs
-      # 后端 models 目录 (外挂载解决模块导入问题)
-      - ./backend/services/api/models:/app/backend/services/api/models
-      - ./backend/services/api/user_app/models:/app/backend/services/api/user_app/models
-      - ./backend/services/api/community_app/models:/app/backend/services/api/community_app/models
-      - ./backend/services/stream/market_app/models:/app/backend/services/stream/market_app/models
-      - ./backend/services/trade/models:/app/backend/services/trade/models
-      - ./backend/services/trade/simulation/models:/app/backend/services/trade/simulation/models
-      - ./backend/services/trade/portfolio/models:/app/backend/services/trade/portfolio/models
-      - ./backend/services/engine/models:/app/backend/services/engine/models
-      - ./backend/services/engine/ai_strategy/models:/app/backend/services/engine/ai_strategy/models
+      # 后端代码 (外挂载解决热更新问题)
+      - ./backend:/app/backend
+      - ./config:/app/config
     restart: unless-stopped
     networks:
       - quantmind-net
