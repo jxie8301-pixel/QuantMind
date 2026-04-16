@@ -116,7 +116,7 @@ class OrderListQuery(BaseModel):
     """Order list query"""
 
     tenant_id: str | None = None
-    user_id: int | None = None
+    user_id: str | None = None
     portfolio_id: int | None = None
     symbol: str | None = None
     status: OrderStatus | None = None

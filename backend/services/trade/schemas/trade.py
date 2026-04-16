@@ -61,7 +61,7 @@ class TradeListQuery(BaseModel):
     """Trade list query"""
 
     tenant_id: str | None = None
-    user_id: int | None = None
+    user_id: str | None = None
     portfolio_id: int | None = None
     order_id: UUID4 | None = None
     symbol: str | None = None
