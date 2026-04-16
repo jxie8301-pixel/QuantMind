@@ -332,22 +332,12 @@ class COSUploader:
         self, url: str | None = None, object_key: str | None = None
     ) -> str:
         try:
-            read_timeout = float(os.getenv("COS_READ_TIMEOUT_SECONDS", "30"))
-
             if url and url.startswith("file://"):
                 file_path = url.replace("file://", "")
                 with open(file_path, encoding="utf-8") as f:
                     return f.read()
 
             return ""
-                    return raw.decode("utf-8")
-
-                return await asyncio.wait_for(
-                    asyncio.to_thread(_read_from_url_sync),
-                    timeout=read_timeout + 2.0,
-                )
-
-            raise RuntimeError("无法读取对象内容")
         except Exception as e:
             logger.error(f"读取对象失败: {e}", exc_info=True)
             raise RuntimeError(f"读取对象失败: {e}")
