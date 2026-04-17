@@ -62,11 +62,11 @@ services:
       - SERVICE_MODE=all
       - TZ=Asia/Shanghai
       - PYTHONPATH=/app
-      
+
       # 安全配置
       - SECRET_KEY=${SECRET_KEY:-quantmind-oss-secret-key-2026}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-quantmind-oss-jwt-key-2026}
-      
+
       # 数据库配置
       - DB_DRIVER=asyncpg
       - DB_HOST=db
@@ -75,16 +75,16 @@ services:
       - DB_USER=${DB_USER:-quantmind}
       - DB_PASSWORD=${DB_PASSWORD:-quantmind2026}
       - DATABASE_URL=postgresql+asyncpg://quantmind:quantmind2026@db:5432/quantmind
-      
+
       # Redis 配置
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=
-      
+
       # 存储配置 (本地存储)
       - STORAGE_MODE=local
       - STORAGE_ROOT=/data
-      
+
       # 服务端口
       - API_PORT=8000
       - ENGINE_PORT=8001
@@ -126,6 +126,65 @@ services:
       - ./config:/app/config
       # 策略模板
       - ./strategy_templates:/app/strategy_templates
+    restart: unless-stopped
+    networks:
+      - quantmind-net
+
+  # 4. Celery Worker (Qlib 回测任务)
+  celery-worker:
+    image: quantmind-oss:latest
+    container_name: quantmind-celery
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # 应用配置
+      - APP_EDITION=oss
+      - APP_ENV=production
+      - TZ=Asia/Shanghai
+      - PYTHONPATH=/app
+
+      # 数据库配置
+      - DB_DRIVER=asyncpg
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-quantmind}
+      - DB_USER=${DB_USER:-quantmind}
+      - DB_PASSWORD=${DB_PASSWORD:-quantmind2026}
+      - DATABASE_URL=postgresql+asyncpg://quantmind:quantmind2026@db:5432/quantmind
+
+      # Redis 配置
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+
+      # 存储配置
+      - STORAGE_MODE=local
+      - STORAGE_ROOT=/data
+
+      # 策略模板目录
+      - STRATEGY_TEMPLATES_DIR=/app/strategy_templates
+
+      # Qwen/DashScope API
+      - DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY:-}
+      - QWEN_API_KEY=${QWEN_API_KEY:-}
+    volumes:
+      # 运行时数据
+      - ./data:/data
+      # AI 模型文件
+      - ./models:/app/models
+      # Qlib 历史数据
+      - ./db:/app/db
+      # 日志
+      - ./logs:/app/logs
+      # 后端代码
+      - ./backend:/app/backend
+      - ./config:/app/config
+      # 策略模板
+      - ./strategy_templates:/app/strategy_templates
+    command: celery -A backend.services.engine.qlib_app.celery_config:celery_app worker -Q qlib_backtest --loglevel=info --concurrency=2
     restart: unless-stopped
     networks:
       - quantmind-net
