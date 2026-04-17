@@ -51,6 +51,7 @@ RUN python -m pip install --upgrade pip setuptools wheel cython \
 # 复制源代码
 COPY backend backend
 COPY config config
+COPY strategy_templates strategy_templates
 
 # 创建数据目录
 RUN mkdir -p /data/models /data/qlib_data /data/uploads /data/strategies /tmp
