@@ -622,7 +622,6 @@ show_info() {
     echo ""
     echo -e "${YELLOW}📁 目录信息${NC}"
     echo -e "   部署目录: $DEPLOY_DIR/quantmind"
-    echo -e "   数据目录: $DATA_DIR"
     echo ""
     echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
