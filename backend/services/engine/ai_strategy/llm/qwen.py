@@ -41,7 +41,12 @@ class QwenLLM:
         base_url = self._config.LLM_API_BASE.rstrip("/")
         self.endpoint = f"{base_url}/chat/completions"
 
-    def generate_code(self, prompt: str, mode: str = "simple") -> tuple[str, dict[str, Any]]:
+    def generate_code(self, prompt: str, mode: str = "simple", api_key: str | None = None) -> tuple[str, dict[str, Any]]:
+        # Use provided api_key or fall back to instance api_key
+        effective_api_key = api_key or self.api_key
+        if not effective_api_key:
+            raise RuntimeError("No API key available (neither provided nor in environment)")
+
         # OpenAI 兼容模式请求格式
         payload = {
             "model": self._config.LLM_MODEL,
@@ -56,7 +61,7 @@ class QwenLLM:
             "temperature": self._config.LLM_TEMPERATURE,
         }
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {effective_api_key}",
             "Content-Type": "application/json",
         }
 

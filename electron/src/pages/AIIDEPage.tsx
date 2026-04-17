@@ -29,7 +29,6 @@ import {
     Activity,
     Bot,
     AlertCircle,
-    Settings,
     HelpCircle,
     CloudUpload
 } from 'lucide-react';
@@ -148,14 +147,12 @@ const AIIDEPage: React.FC = () => {
     const [isAITyping, setIsAITyping] = React.useState(false);
     const [createMode, setCreateMode] = React.useState<'file' | 'folder' | null>(null);
     const [createName, setCreateName] = React.useState('');
-    const [showSettings, setShowSettings] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
-    const [apiKey, setApiKey] = React.useState('');
     const [apiKeyMasked, setApiKeyMasked] = React.useState('');
     const [isSavingConfig, setIsSavingConfig] = React.useState(false);
-    const [isLoadingFiles, setIsLoadingFiles] = React.useState(false);
     const [isLoadingRemote, setIsLoadingRemote] = React.useState(false);
     const [isLoadingConfig, setIsLoadingConfig] = React.useState(false);
+    const [isLoadingFiles, setIsLoadingFiles] = React.useState(false);
 
 
     const logEndRef = React.useRef<HTMLDivElement>(null);
@@ -362,10 +359,8 @@ const AIIDEPage: React.FC = () => {
 
     // 加载全局配置
     React.useEffect(() => {
-        if (showSettings) {
-            fetchSystemConfig();
-        }
-    }, [showSettings]);
+        fetchSystemConfig();
+    }, []);
 
     // 处理 URL 参数自动加载策略
     React.useEffect(() => {
@@ -417,7 +412,7 @@ const AIIDEPage: React.FC = () => {
         const msg = String(raw || '').trim();
         const lower = msg.toLowerCase();
         if (lower.includes('api key not configured')) {
-            return '尚未配置 AI Key，请在“设置”中填写后重试。';
+            return '尚未配置 AI Key，请在”个人中心 → 其他设置”中填写后重试。';
         }
         if (lower.includes('api returned status 401')) {
             return 'AI 服务鉴权失败（401），请检查 API Key 是否正确，或是否与当前模型/服务商匹配。';
@@ -425,49 +420,7 @@ const AIIDEPage: React.FC = () => {
         return msg || 'LLM 请求失败';
     };
 
-    const handleSaveConfig = async () => {
-        setIsSavingConfig(true);
-        try {
-            // 1. 保存 API Key (如果输入了新 Key)
-            if (apiKey.trim()) {
-                try {
-                    const res = await apiFetch('/config/llm', {
-                        method: 'POST',
-                        body: JSON.stringify({ qwen_api_key: apiKey })
-                    }, true);
-                    const data = await res.json();
-                    if (!data?.success) {
-                        message.warning(`API Key 保存提醒: ${data?.detail || '接口响应异常'}`);
-                    }
-                } catch (e) {
-                    message.error('保存 API Key 失败，请确保 AI-IDE 后端已启动');
-                }
-
-                // 额外同步到用户个人信息表（网关统一入口）
-                try {
-                    await fetch(`${SERVICE_ENDPOINTS.USER_SERVICE}/profiles/me/profile`, {
-                        method: 'PUT',
-                        headers: buildRequestHeaders(undefined, true),
-                        body: JSON.stringify({ ai_ide_api_key: apiKey.trim() }),
-                    });
-                } catch (e) {
-                    console.warn('Failed to sync ai_ide_api_key to user profile', e);
-                }
-            }
-
-
-            message.success('配置已保存');
-            setApiKey('');
-            setShowSettings(false);
-
-            // 重新加载配置
-            setTimeout(() => fetchSystemConfig(), 2000);
-        } catch (err: any) {
-            message.error(`配置保存失败：${err.message || '未知错误'}`);
-        } finally {
-            setIsSavingConfig(false);
-        }
-    };
+    const normalizeChatError = (raw: string) => {
 
     // Selection Effect: Load file content
     React.useEffect(() => {
@@ -1551,9 +1504,6 @@ const AIIDEPage: React.FC = () => {
             console.error('Chat failed', err);
             const rawErr = err instanceof Error ? err.message : 'LLM 请求失败';
             const errMsg = normalizeChatError(rawErr);
-            if (errMsg.includes('尚未配置 AI Key')) {
-                setShowSettings(true);
-            }
             message.error(errMsg);
             (setMessages as React.Dispatch<React.SetStateAction<Message[]>>)((curr) => curr.map((m) =>
                 m.id === aiMsgId ? { ...m, content: `❌ ${errMsg}` } : m
@@ -2042,68 +1992,6 @@ const AIIDEPage: React.FC = () => {
                     </div>
                 </div>
             )}
-            {showSettings && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="w-[600px] bg-white rounded-3xl shadow-2xl border border-gray-100 p-6"
-                    >
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-blue-50 rounded-xl text-blue-600">
-                                    <Settings className="w-5 h-5" />
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-800">系统设置</h3>
-                            </div>
-                            <button
-                                onClick={() => setShowSettings(false)}
-                                className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors"
-                            >
-                                <ChevronRight className="w-5 h-5 rotate-90" />
-                            </button>
-                        </div>
-
-                        <div className="space-y-4">
-
-                            {/* API Key 配置 */}
-                            <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-100">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <div className="p-1.5 bg-indigo-600 rounded-lg text-white">
-                                        <Bot className="w-3.5 h-3.5" />
-                                    </div>
-                                    <h4 className="text-sm font-bold text-gray-800">AI 智能助手配置</h4>
-                                </div>
-                                {apiKeyMasked && (
-                                    <div className="mb-2 text-[10px] text-gray-500">
-                                        当前 API Key: <span className="font-mono bg-white px-2 py-0.5 rounded">{apiKeyMasked}</span>
-                                    </div>
-                                )}
-                                <input
-                                    type="password"
-                                    value={apiKey}
-                                    onChange={(e) => setApiKey(e.target.value)}
-                                    placeholder="输入新的 Qwen API Key"
-                                    className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 mb-3"
-                                />
-                            </div>
-
-
-                            <button
-                                onClick={handleSaveConfig}
-                                disabled={isSavingConfig || isLoadingConfig}
-                                className="w-full py-3 bg-blue-600 text-white text-sm font-bold rounded-2xl hover:bg-blue-700 disabled:opacity-50 transition-all shadow-md active:scale-[0.98]"
-                            >
-                                {isSavingConfig ? '正在保存并重启...' : '保存并应用更改'}
-                            </button>
-                        </div>
-
-                        <div className="mt-6 text-center">
-                            <p className="text-[10px] text-gray-400">QuantMind AI-IDE v1.1.0 (Enterprise Standard)</p>
-                        </div>
-                    </motion.div>
-                </div>
-            )}
             {/* 1. File Management Panel */}
             <aside className="w-[280px] flex-shrink-0 bg-white border border-gray-200 flex flex-col rounded-[32px] shadow-sm transition-all duration-500 overflow-hidden">
                 <div className="p-4 border-b border-gray-100">
@@ -2364,13 +2252,6 @@ const AIIDEPage: React.FC = () => {
                             {isSaving ? '已保存' : '保存'}
                         </button>
                         <div className="w-[1px] h-4 bg-gray-200 mx-1" />
-                        <button
-                            onClick={() => setShowSettings(true)}
-                            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors"
-                            title="设置"
-                        >
-                            <Settings className="h-4 w-4" />
-                        </button>
                     </div>
                 </div>
 

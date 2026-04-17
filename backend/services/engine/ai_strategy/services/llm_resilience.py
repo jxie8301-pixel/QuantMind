@@ -126,7 +126,7 @@ class ResilientLLMRouter:
                 state.opened_until = time.time() + self.circuit_open_seconds
 
     def generate_code(
-        self, prompt: str, preferred: str | None = None, mode: str = "simple"
+        self, prompt: str, preferred: str | None = None, mode: str = "simple", api_key: str | None = None
     ) -> tuple[str, dict[str, Any]]:
         self._acquire_rate_limit()
         providers = self._provider_order(preferred)
@@ -153,7 +153,7 @@ class ResilientLLMRouter:
                 last_exc: Exception | None = None
                 for attempt in range(max(1, self.max_retries)):
                     try:
-                        code, meta = provider.generate_code(prompt, mode=mode)
+                        code, meta = provider.generate_code(prompt, mode=mode, api_key=api_key)
                         self._record_success(provider_name)
                         merged = dict(meta or {})
                         merged["provider"] = provider_name

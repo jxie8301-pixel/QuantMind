@@ -2,6 +2,7 @@
 
 import asyncio
 import hashlib
+import httpx
 import json
 import logging
 import os
@@ -128,9 +129,30 @@ async def _get_qlib_task(task_id: str) -> dict[str, Any] | None:
         return dict(task)
 
 
-async def _generate_qlib_impl(body: GenerateQlibRequest, trace_id: str | None) -> GenerateQlibResponse:
+async def _fetch_user_api_key(user_id: str, tenant_id: str = "default") -> str | None:
+    """Fetch user's personal LLM API key from user profile."""
     try:
-        logger.info("generate_qlib started", extra={"trace_id": trace_id})
+        from backend.shared.auth import get_internal_call_secret
+        api_gateway = os.getenv("INTERNAL_API_GATEWAY_URL", "http://quantmind-api:8000")
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            headers = {
+                "X-Internal-Call": get_internal_call_secret(),
+                "X-User-Id": user_id,
+                "X-Tenant-Id": tenant_id
+            }
+            resp = await client.get(f"{api_gateway}/api/v1/profiles/{user_id}", headers=headers)
+            if resp.status_code == 200:
+                return resp.json().get("data", {}).get("ai_ide_api_key")
+    except Exception as e:
+        logger.warning(f"Could not fetch individual API key for user {user_id}: {e}")
+    return None
+
+
+async def _generate_qlib_impl(
+    body: GenerateQlibRequest, trace_id: str | None, user_id: str | None = None, tenant_id: str | None = None
+) -> GenerateQlibResponse:
+    try:
+        logger.info("generate_qlib started", extra={"trace_id": trace_id, "user_id": user_id})
 
         def _camel_to_snake(key: str) -> str:
             out: list[str] = []
@@ -281,6 +303,13 @@ async def _generate_qlib_impl(body: GenerateQlibRequest, trace_id: str | None) -
         llm_provider = (os.getenv("LLM_PROVIDER_FORCE") or os.getenv("LLM_PROVIDER") or "qwen").strip().lower()
         llm_router = get_resilient_llm_router()
 
+        # Fetch user's personal API key if available
+        user_api_key = None
+        if user_id:
+            user_api_key = await _fetch_user_api_key(user_id, tenant_id or "default")
+            if user_api_key:
+                logger.info(f"Using user's personal API key for user {user_id}")
+
         uploader = get_cos_uploader()
         pool_file_url = (body.pool_file_url or "").strip() or _build_pool_file_url_from_key(
             body.pool_file_key, uploader
@@ -360,7 +389,7 @@ async def _generate_qlib_impl(body: GenerateQlibRequest, trace_id: str | None) -
             """
         ).strip()
         try:
-            code, _meta = await asyncio.to_thread(llm_router.generate_code, prompt, llm_provider, "simple")
+            code, _meta = await asyncio.to_thread(llm_router.generate_code, prompt, llm_provider, "simple", user_api_key)
             code = _strip_markdown_fences(code)
             need_inject_header = any(var not in code for var in ("POOL_FILE_KEY", "POOL_FILE_URL", "POOL_FILE_LOCAL"))
             if need_inject_header:
@@ -398,6 +427,7 @@ async def _generate_qlib_impl(body: GenerateQlibRequest, trace_id: str | None) -
                         _local_repair_prompt(code, err),
                         llm_provider,
                         "simple",
+                        user_api_key,
                     )
                     code = _strip_markdown_fences(fixed)
                     ok, err = _syntax_check(code)
@@ -417,7 +447,9 @@ async def _generate_qlib_impl(body: GenerateQlibRequest, trace_id: str | None) -
 
 @router.post("/generate-qlib", response_model=GenerateQlibResponse)
 async def generate_qlib(body: GenerateQlibRequest, request: Request):
-    return await _generate_qlib_impl(body, _trace_id(request))
+    user_id = str(getattr(request.state, "user", {}).get("user_id") or "").strip() or None
+    tenant_id = str(getattr(request.state, "user", {}).get("tenant_id") or "default").strip()
+    return await _generate_qlib_impl(body, _trace_id(request), user_id, tenant_id)
 
 
 @router.post("/generate-qlib/async", response_model=GenerateQlibTaskSubmitResponse)
@@ -446,7 +478,7 @@ async def submit_generate_qlib_task(body: GenerateQlibRequest, request: Request)
 
     async def _runner() -> None:
         await _save_qlib_task(task_id, {"status": "running"})
-        result = await _generate_qlib_impl(body.model_copy(deep=True), trace_id)
+        result = await _generate_qlib_impl(body.model_copy(deep=True), trace_id, body.user_id, tenant_id)
         status = "completed" if result.success else "failed"
         await _save_qlib_task(
             task_id,

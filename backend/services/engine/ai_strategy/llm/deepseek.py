@@ -67,7 +67,12 @@ class DeepseekLLM:
         self.max_tokens = int(getattr(ai_strategy_config, "DEEPSEEK_MAX_TOKENS", 2000))
         self.temperature = float(getattr(ai_strategy_config, "DEEPSEEK_TEMPERATURE", 0.7))
 
-    def generate_code(self, prompt: str, mode: str = "simple") -> tuple[str, dict[str, Any]]:
+    def generate_code(self, prompt: str, mode: str = "simple", api_key: str | None = None) -> tuple[str, dict[str, Any]]:
+        # Use provided api_key or fall back to instance api_key
+        effective_api_key = api_key or self.api_key
+        if not effective_api_key:
+            raise RuntimeError("No API key available (neither provided nor in environment)")
+
         messages = [
             {
                 "role": "system",
@@ -82,7 +87,7 @@ class DeepseekLLM:
             "max_tokens": self.max_tokens,
         }
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {effective_api_key}",
             "Content-Type": "application/json",
         }
 
