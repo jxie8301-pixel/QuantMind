@@ -291,7 +291,7 @@ export interface DashboardMetrics {
     };
 }
 
-export type AdminTab = 'dashboard' | 'users' | 'community' | 'models' | 'predictions' | 'data' | 'strategy-templates';
+export type AdminTab = 'dashboard' | 'users' | 'models' | 'data' | 'strategy-templates';
 
 /** 策略模板参数定义 */
 export interface StrategyTemplateParam {

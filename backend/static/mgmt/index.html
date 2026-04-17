@@ -63,9 +63,6 @@
                         <button onclick="switchTab('users')" id="tab-users" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-900">
                             <span>👥 用户管理</span>
                         </button>
-                        <button onclick="switchTab('community')" id="tab-community" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-900">
-                            <span>💬 社区治理</span>
-                        </button>
                     </nav>
 
                     <div class="pt-6 border-t border-slate-200">
@@ -114,24 +111,6 @@
                                 </table>
                             </div>
                         </div>
-
-                        <!-- 社区治理视图 -->
-                        <div id="view-community" class="hidden space-y-6">
-                            <div class="overflow-hidden border border-slate-200 rounded-2xl bg-white shadow-sm">
-                                <table class="w-full text-left text-sm">
-                                    <thead class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
-                                        <tr>
-                                            <th class="px-6 py-4">TITLE</th>
-                                            <th class="px-6 py-4">CATEGORY</th>
-                                            <th class="px-6 py-4">STATS</th>
-                                            <th class="px-6 py-4">FLAGS</th>
-                                            <th class="px-6 py-4 text-right">ACTIONS</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="post-table-body" class="divide-y divide-slate-100 text-slate-700"></tbody>
-                                </table>
-                            </div>
-                        </div>
                     </div>
                 </main>
             </div>
@@ -146,13 +125,12 @@
         const logoutBtn = document.getElementById('logout-btn');
         const appContainer = document.getElementById('app');
 
-        const TABS = ['dashboard', 'users', 'community'];
+        const TABS = ['dashboard', 'users'];
 
         function switchTab(tabId) {
-            const titles = { 
-                dashboard: 'Dashboard', 
-                users: 'User Management', 
-                community: 'Community Governance'
+            const titles = {
+                dashboard: 'Dashboard',
+                users: 'User Management'
             };
             document.getElementById('view-title').textContent = titles[tabId];
 
@@ -168,7 +146,6 @@
 
             if (tabId === 'dashboard') loadStats();
             if (tabId === 'users') loadUsers();
-            if (tabId === 'community') loadPosts();
         }
 
         async function defApi(url, method = 'GET', body = null) {
@@ -189,11 +166,10 @@
         async function loadStats() {
             const container = document.getElementById('stats-grid');
             try {
-                const communityStats = await defApi('/api/v1/admin/community/stats');
                 const stats = [
                     { label: 'Total Users', val: '1,284', color: 'text-slate-900' },
-                    { label: 'Community Posts', val: communityStats.data?.total_posts || 0, color: 'text-slate-900' },
-                    { label: 'Total Views', val: communityStats.data?.total_views || 0, color: 'text-blue-600' }
+                    { label: 'Active Today', val: '328', color: 'text-emerald-600' },
+                    { label: 'System Health', val: '99.9%', color: 'text-blue-600' }
                 ];
                 container.innerHTML = stats.map(s => `
                     <div class="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
@@ -247,57 +223,6 @@
                 if (res.code === 200) loadUsers();
                 else alert('操作失败: ' + res.message);
             } catch (e) { alert('网络异常'); }
-        }
-
-        async function loadPosts() {
-            const tbody = document.getElementById('post-table-body');
-            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-slate-400 font-medium animate-pulse">正在穿透全租户拉取社区动态...</td></tr>';
-            try {
-                const result = await defApi('/api/v1/admin/community/posts');
-                if (result.success && result.data && result.data.items) {
-                    if (result.data.items.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-slate-400">社区暂时没有动态</td></tr>';
-                        return;
-                    }
-                    tbody.innerHTML = result.data.items.map(p => `
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-6 py-4">
-                                <div class="font-bold text-slate-900">${p.title}</div>
-                                <div class="text-[10px] text-slate-400 mt-1 uppercase font-medium">By UID: ${p.author_id} · T:${p.tenant_id} · ${p.created_at ? new Date(p.created_at).toLocaleDateString() : 'N/A'}</div>
-                            </td>
-                            <td class="px-6 py-4"><span class="px-2 py-1 bg-slate-100 rounded text-[10px] font-black uppercase text-slate-500">${p.category}</span></td>
-                            <td class="px-6 py-4 text-xs font-bold text-slate-500">👁️ ${p.views} · ❤️ ${p.likes}</td>
-                            <td class="px-6 py-4">
-                                <div class="flex gap-1">
-                                    ${p.pinned ? '<span class="w-2.5 h-2.5 bg-rose-500 rounded-full shadow-sm"></span>' : ''}
-                                    ${p.featured ? '<span class="w-2.5 h-2.5 bg-blue-500 rounded-full shadow-sm"></span>' : ''}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex gap-2 justify-end">
-                                    <button type="button" onclick="event.stopPropagation(); togglePostStatus(${p.id}, 'pinned', ${!p.pinned})" class="px-2 py-1 rounded hover:bg-slate-100 text-[10px] font-black uppercase ${p.pinned ? 'text-rose-500' : 'text-slate-400 hover:text-blue-600'}">${p.pinned ? 'Unpin' : 'Pin'}</button>
-                                    <button type="button" onclick="event.stopPropagation(); togglePostStatus(${p.id}, 'featured', ${!p.featured})" class="px-2 py-1 rounded hover:bg-slate-100 text-[10px] font-black uppercase ${p.featured ? 'text-blue-500' : 'text-slate-400 hover:text-blue-600'}">${p.featured ? 'Unfeature' : 'Feature'}</button>
-                                    <button type="button" onclick="event.stopPropagation(); confirmDeletePost(${p.id})" class="px-2 py-1 rounded hover:bg-rose-50 text-[10px] font-black uppercase text-slate-300 hover:text-rose-600">Remove</button>
-                                </div>
-                            </td>
-                        </tr>
-                    `).join('');
-                }
-            } catch (e) { console.error('loadPosts error:', e); }
-        }
-
-        async function togglePostStatus(id, field, val) {
-            const res = await defApi(`/api/v1/admin/community/posts/${id}`, 'PATCH', { [field]: val });
-            if (res.success) loadPosts();
-        }
-
-        function confirmDeletePost(id) {
-            setTimeout(async () => {
-                if (confirm('确定要强制下架此动态吗？该操作将物理删除此帖子。')) {
-                    const res = await defApi(`/api/v1/admin/community/posts/${id}`, 'DELETE');
-                    if (res.success) loadPosts();
-                }
-            }, 10);
         }
 
         loginForm.onsubmit = async (e) => {

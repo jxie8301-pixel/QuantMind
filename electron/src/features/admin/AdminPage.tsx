@@ -3,9 +3,7 @@ import { Layout, Menu, Button } from 'antd';
 import {
     DashboardOutlined,
     UserOutlined,
-    SafetyCertificateOutlined,
     CloudServerOutlined,
-    LineChartOutlined,
     DatabaseOutlined,
     FileTextOutlined,
     ArrowLeftOutlined
@@ -13,9 +11,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { AdminDashboard } from './components/AdminDashboard';
 import { AdminUserTable } from './components/AdminUserTable';
-import { AdminCommunityAudit } from './components/AdminCommunityAudit';
 import { AdminModelManagement } from './components/AdminModelManagement';
-import { AdminPredictionManagement } from './components/AdminPredictionManagement';
 import { AdminDataManagement } from './components/AdminDataManagement';
 import { AdminStrategyTemplates } from './components/AdminStrategyTemplates';
 import { AdminTab } from './types';
@@ -30,9 +26,7 @@ const AdminPage: React.FC = () => {
         switch (activeTab) {
             case 'dashboard': return <AdminDashboard />;
             case 'users': return <AdminUserTable />;
-            case 'community': return <AdminCommunityAudit />;
             case 'models': return <AdminModelManagement />;
-            case 'predictions': return <AdminPredictionManagement />;
             case 'data': return <AdminDataManagement />;
             case 'strategy-templates': return <AdminStrategyTemplates />;
             default: return <AdminDashboard />;
@@ -42,9 +36,7 @@ const AdminPage: React.FC = () => {
     const menuItems = [
         { key: 'dashboard', icon: <DashboardOutlined />, label: '系统概览' },
         { key: 'users', icon: <UserOutlined />, label: '用户管理' },
-        { key: 'community', icon: <SafetyCertificateOutlined />, label: '社区治理' },
         { key: 'models', icon: <CloudServerOutlined />, label: '模型管理' },
-        { key: 'predictions', icon: <LineChartOutlined />, label: '预测管理' },
         { key: 'data', icon: <DatabaseOutlined />, label: '数据管理' },
         { key: 'strategy-templates', icon: <FileTextOutlined />, label: '策略模板' },
     ];

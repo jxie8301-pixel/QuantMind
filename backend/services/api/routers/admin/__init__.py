@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 
-from .community import router as community_router
 from .dashboard import router as dashboard_router
 from .model_management import router as model_management_router
 from .admin_training import router as admin_training_router
@@ -19,9 +18,6 @@ admin_router.include_router(
 )
 admin_router.include_router(
     users_router, prefix="/users", tags=["Admin-Users"]
-)
-admin_router.include_router(
-    community_router, prefix="/community", tags=["Admin-Community"]
 )
 admin_router.include_router(
     strategy_templates_router, prefix="/strategy-templates", tags=["Admin-StrategyTemplates"]
