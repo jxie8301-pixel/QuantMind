@@ -112,6 +112,10 @@ services:
       # LLM 配置 (可选，用于 AI 策略功能)
       - LLM_API_KEY=${LLM_API_KEY:-sk-placeholder}
       - LLM_BASE_URL=${LLM_BASE_URL:-https://api.openai.com/v1}
+
+      # Qwen/DashScope API (用于 AI 策略功能)
+      - DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY:-}
+      - QWEN_API_KEY=${QWEN_API_KEY:-}
     volumes:
       # 运行时数据
       - ./data:/data
