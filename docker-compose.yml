@@ -185,6 +185,11 @@ services:
       # 策略模板
       - ./strategy_templates:/app/strategy_templates
     command: celery -A backend.services.engine.qlib_app.celery_config:celery_app worker -Q qlib_backtest --loglevel=info --concurrency=2
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'celery.*worker' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
     networks:
       - quantmind-net
