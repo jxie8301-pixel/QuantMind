@@ -420,8 +420,6 @@ const AIIDEPage: React.FC = () => {
         return msg || 'LLM 请求失败';
     };
 
-    const normalizeChatError = (raw: string) => {
-
     // Selection Effect: Load file content
     React.useEffect(() => {
         if (activeTab === 'local' && selectedFile) {
