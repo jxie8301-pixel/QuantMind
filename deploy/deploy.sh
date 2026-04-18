@@ -12,6 +12,7 @@
 # 使用方式:
 #   chmod +x deploy.sh
 #   sudo ./deploy.sh                    # 完整部署
+#   sudo ./deploy.sh --yes              # 自动确认，无需交互
 #   sudo ./deploy.sh --backend-only     # 仅部署后端
 #   sudo ./deploy.sh --frontend-only    # 仅部署前端
 #   sudo ./deploy.sh --resume           # 从断点继续
@@ -46,6 +47,7 @@ BACKEND_ONLY=false
 FRONTEND_ONLY=false
 RESUME=false
 RESET=false
+AUTO_YES=false
 
 for arg in "$@"; do
     case $arg in
@@ -53,6 +55,7 @@ for arg in "$@"; do
         --frontend-only) FRONTEND_ONLY=true ;;
         --resume) RESUME=true ;;
         --reset) RESET=true ;;
+        --yes) AUTO_YES=true ;;
     esac
 done
 
@@ -682,6 +685,11 @@ show_welcome() {
 
 # 确认部署
 confirm_deploy() {
+    # 自动确认模式
+    if $AUTO_YES; then
+        return 0
+    fi
+
     echo -e -n "是否继续部署？ [y/N]: "
     read -r response
     case "$response" in
