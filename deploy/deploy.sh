@@ -166,6 +166,7 @@ test_npm_mirror() {
 select_npm_mirror() {
     log_info "测试 npm 镜像加速器..." >&2
     for mirror in "${NPM_MIRRORS[@]}"; do
+        log_info "测试: $mirror" >&2
         if test_npm_mirror "$mirror"; then
             log_info "选择镜像: $mirror" >&2
             echo "$mirror"
@@ -293,6 +294,14 @@ step3_install_nodejs() {
 #===============================================================================
 step4_install_pm2() {
     log_step "Step 4: 安装 PM2"
+
+    # 确保 npm registry 已配置
+    local current_registry=$(npm config get registry 2>/dev/null)
+    if [[ -z "$current_registry" || "$current_registry" == "undefined" || ! "$current_registry" =~ ^https?:// ]]; then
+        local npm_mirror=$(select_npm_mirror)
+        npm config set registry "$npm_mirror"
+        log_info "npm 镜像: $(npm config get registry)"
+    fi
 
     if command -v pm2 &> /dev/null; then
         log_warn "PM2 已安装: $(pm2 --version)"
