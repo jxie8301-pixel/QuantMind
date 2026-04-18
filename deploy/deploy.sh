@@ -295,13 +295,10 @@ step3_install_nodejs() {
 step4_install_pm2() {
     log_step "Step 4: 安装 PM2"
 
-    # 确保 npm registry 已配置
-    local current_registry=$(npm config get registry 2>/dev/null)
-    if [[ -z "$current_registry" || "$current_registry" == "undefined" || ! "$current_registry" =~ ^https?:// ]]; then
-        local npm_mirror=$(select_npm_mirror)
-        npm config set registry "$npm_mirror"
-        log_info "npm 镜像: $(npm config get registry)"
-    fi
+    # 确保 npm registry 已配置（强制设置）
+    local npm_mirror=$(select_npm_mirror)
+    npm config set registry "$npm_mirror"
+    log_info "npm 镜像: $(npm config get registry)"
 
     if command -v pm2 &> /dev/null; then
         log_warn "PM2 已安装: $(pm2 --version)"
