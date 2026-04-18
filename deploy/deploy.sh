@@ -181,33 +181,11 @@ step2_install_docker() {
     if command -v docker &> /dev/null; then
         log_warn "Docker 已安装: $(docker --version)"
     else
-        # 尝试多个 Docker 安装源
         log_info "安装 Docker..."
 
-        # 方法1: 使用官方脚本（带重试）
-        local docker_installed=false
-
-        for mirror in "Aliyun" ""; do
-            log_info "尝试安装 Docker (mirror: ${mirror:-official})..."
-            if [[ -n "$mirror" ]]; then
-                curl -fsSL --connect-timeout 30 --retry 3 https://get.docker.com | bash -s docker --mirror "$mirror" && docker_installed=true
-            else
-                curl -fsSL --connect-timeout 30 --retry 3 https://get.docker.com | bash && docker_installed=true
-            fi
-            if $docker_installed; then
-                break
-            fi
-            log_warn "镜像 $mirror 安装失败，尝试下一个..."
-            sleep 5
-        done
-
-        # 方法2: 如果脚本安装失败，使用 apt 安装
-        if ! $docker_installed; then
-            log_info "使用 apt 安装 Docker..."
-            apt-get update -y
-            apt-get install -y docker.io docker-compose-v2
-            docker_installed=true
-        fi
+        # 优先使用 apt 安装（更稳定）
+        apt-get update -y
+        DEBIAN_FRONTEND=noninteractive apt-get install -y docker.io docker-compose-v2
 
         systemctl start docker
         systemctl enable docker
