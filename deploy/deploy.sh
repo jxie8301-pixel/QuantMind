@@ -231,7 +231,7 @@ step2_install_docker() {
     # 配置 Docker 镜像加速器
     local mirror=$(select_docker_mirror)
     if [[ -n "$mirror" ]]; then
-        log_info "配置 Docker 镜像加速器..."
+        log_info "配置 Docker 镜像加速器: $mirror"
         mkdir -p /etc/docker
         cat > /etc/docker/daemon.json << EOF
 {
@@ -239,7 +239,14 @@ step2_install_docker() {
 }
 EOF
         systemctl daemon-reload
-        systemctl restart docker
+        if systemctl restart docker; then
+            log_info "Docker 镜像加速器配置成功"
+        else
+            log_warn "Docker 镜像加速器配置失败，移除配置"
+            rm -f /etc/docker/daemon.json
+            systemctl daemon-reload
+            systemctl restart docker
+        fi
         sleep 3
     fi
 
